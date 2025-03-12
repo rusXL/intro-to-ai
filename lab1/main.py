@@ -2,19 +2,20 @@ import random
 
 class Node:
     def __init__(self, state, parent, action):
-        self.state = state # let's start with coordinates (row, col)
+        self.state = state
         self.parent = parent
         self.action = action
 
-class QueueFrontier: # let's start with BFS
+class PriorityQueueFrontier:
     def __init__(self):
         self.frontier = []
 
-    def add(self, node):
-        self.frontier.append(node)
+    def add(self, node, priority):
+        self.frontier.append((priority, node))
+        self.frontier.sort(key=lambda x: x[0])  # sort by priority (lower is better)
 
     def contains_state(self, state):
-        return any(node.state == state for node in self.frontier)
+        return any(node.state == state for _, node in self.frontier)
 
     def empty(self):
         return len(self.frontier) == 0
@@ -23,9 +24,7 @@ class QueueFrontier: # let's start with BFS
         if self.empty():
             raise Exception("empty frontier")
         else:
-            node = self.frontier[0]
-            self.frontier = self.frontier[1:]
-            return node
+            return self.frontier.pop(0)[1]
 
 class MazeSolver:
     def __init__(self, maze, start, goal):
@@ -37,7 +36,12 @@ class MazeSolver:
         self.solution = None
         self.step = 0  # Step counter for visualization
         self.visited = set()
-        self.frontier = QueueFrontier()
+        self.frontier = PriorityQueueFrontier()
+
+    def h(self, state):
+        x1, y1 = state
+        x2, y2 = self.goal
+        return abs(x1 - x2) + abs(y1 - y2)
 
     def neighbors(self, state):
         row, col = state
@@ -63,7 +67,7 @@ class MazeSolver:
         # Initialize frontier to just the starting position
         start = Node(state=self.start, parent=None, action=None)
 
-        self.frontier.add(start)
+        self.frontier.add(start, self.h(self.start))
 
 
         while True:
@@ -98,7 +102,7 @@ class MazeSolver:
                 if not self.frontier.contains_state(state) and state not in self.visited:
                     # if we haven't visited or are not to visit the node yet, add it to frontier
                     child = Node(state=state, parent=node, action=action)
-                    self.frontier.add(child)
+                    self.frontier.add(child, self.h(state))
 
     def output_image(self, filename, show_solution=True, show_explored=True, current=None):
         from PIL import Image, ImageDraw
@@ -137,6 +141,12 @@ class MazeSolver:
                       ((j + 1) * cell_size - cell_border, (i + 1) * cell_size - cell_border)]),
                     fill=fill
                 )
+
+                # h
+                if not col and (i, j) != self.start and (i, j) != self.goal:
+                    text = str(self.h((i, j)))
+                    text_x, text_y = j * cell_size + 15, i * cell_size + 15
+                    draw.text((text_x, text_y), text, fill="black")
 
         img.save(filename)
 
