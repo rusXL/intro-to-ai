@@ -34,7 +34,7 @@ class MazeSolver:
         self.height = len(maze)
         self.width = len(maze[0])
         self.solution = None
-        self.step = 0  # Step counter for visualization
+        self.step = 0
         self.visited = set()
         self.frontier = PriorityQueueFrontier()
 
@@ -67,7 +67,7 @@ class MazeSolver:
         # Initialize frontier to just the starting position
         start = Node(state=self.start, parent=None, action=None)
 
-        self.frontier.add(start, self.h(self.start))
+        self.frontier.add(start, self.h(self.start) + 0)
 
 
         while True:
@@ -81,7 +81,7 @@ class MazeSolver:
             self.visited.add(node.state)
 
             self.output_image(f"step_{self.step}.png", current=node.state)
-            self.step += 1 # step is now 42
+            self.step += 1
 
             # If node is the goal, then we have a solution
             if node.state == self.goal:
@@ -102,7 +102,7 @@ class MazeSolver:
                 if not self.frontier.contains_state(state) and state not in self.visited:
                     # if we haven't visited or are not to visit the node yet, add it to frontier
                     child = Node(state=state, parent=node, action=action)
-                    self.frontier.add(child, self.h(state))
+                    self.frontier.add(child, self.h(state) + self.step)
 
     def output_image(self, filename, show_solution=True, show_explored=True, current=None):
         from PIL import Image, ImageDraw
