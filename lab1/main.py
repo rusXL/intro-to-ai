@@ -23,8 +23,8 @@ class QueueFrontier: # let's start with BFS
         if self.empty():
             raise Exception("empty frontier")
         else:
-            node = self.frontier[-1]
-            self.frontier = self.frontier[:-1]
+            node = self.frontier[0]
+            self.frontier = self.frontier[1:]
             return node
 
 class MazeSolver:
