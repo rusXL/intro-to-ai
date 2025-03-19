@@ -37,6 +37,7 @@ class MazeSolver:
         self.step = 0
         self.visited = set()
         self.frontier = PriorityQueueFrontier()
+        self.g_cost = {start: 0}
 
     def h(self, state):
         x1, y1 = state
@@ -80,9 +81,6 @@ class MazeSolver:
             # Mark node as explored
             self.visited.add(node.state)
 
-            self.output_image(f"step_{self.step}.png", current=node.state)
-            self.step += 1
-
             # If node is the goal, then we have a solution
             if node.state == self.goal:
                 # backtrack
@@ -102,7 +100,13 @@ class MazeSolver:
                 if not self.frontier.contains_state(state) and state not in self.visited:
                     # if we haven't visited or are not to visit the node yet, add it to frontier
                     child = Node(state=state, parent=node, action=action)
-                    self.frontier.add(child, self.h(state) + self.step)
+
+                    self.g_cost[state] = self.g_cost[node.state] + 1
+
+                    self.frontier.add(child, self.h(state) + self.g_cost[state])
+
+            self.output_image(f"step_{self.step}.png", current=node.state)
+            self.step += 1
 
     def output_image(self, filename, show_solution=True, show_explored=True, current=None):
         from PIL import Image, ImageDraw
@@ -134,7 +138,7 @@ class MazeSolver:
                     fill = (255, 255, 255)  # Empty Cell (White)
 
                 if current and (i, j) == current:
-                    fill = (0, 0, 255)  # Current Node (Blue)
+                    fill = (144, 213, 255)  # Current Node (Blue)
 
                 draw.rectangle(
                     ([(j * cell_size + cell_border, i * cell_size + cell_border),
@@ -144,8 +148,8 @@ class MazeSolver:
 
                 # h
                 if not col and (i, j) != self.start and (i, j) != self.goal:
-                    text = str(self.h((i, j)))
-                    text_x, text_y = j * cell_size + 15, i * cell_size + 15
+                    text = f"{self.h((i, j))} + {self.g_cost.get((i, j), 0)}"
+                    text_x, text_y = j * cell_size + 10, i * cell_size + 10
                     draw.text((text_x, text_y), text, fill="black")
 
         img.save(filename)
