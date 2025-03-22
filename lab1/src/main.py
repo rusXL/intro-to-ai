@@ -97,12 +97,14 @@ def astar(maze, start, goal, H=h1):
             if maze[next_node.x][next_node.y] == 1:  # skip if a wall
                 continue
 
+            if any((entry.x, entry.y) == (next_node.x, next_node.y) for entry in frontier): # skip if already in the frontier
+                continue 
+
             next_node.parent = curr_node
             next_node.g = curr_node.g + 1
             next_node.h = H(goal_node, next_node)
             
-            if not any((entry.x, entry.y) == (next_node.x, next_node.y) for entry in frontier):
-                heapq.heappush(frontier, next_node)
+            heapq.heappush(frontier, next_node)
 
     return -1, ([], visited)  # if no goal found
 
