@@ -3,13 +3,23 @@ import math
 import copy
 
 from matplotlib import rc
-rc('animation') #, writer='ffmpeg')
+rc('animation')  # , writer='ffmpeg')
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.colors import ListedColormap
 
 
-# Class for representing one node on a grid
+# heuristics
+def h1(goal: "Node", node: "Node"):
+    return math.sqrt((goal.x - node.x) ** 2 + (goal.y - node.y) ** 2) * 2
+
+def h2(goal: "Node", node: "Node"):
+    return abs(goal.x - node.x) + abs(goal.y - node.y)
+
+def h(goal: "Node", node: "Node"):
+    return h1(goal, node)
+
+# node
 class Node:
     def __init__(self, x, y) -> None:
         self.x, self.y = x, y
@@ -17,31 +27,19 @@ class Node:
         self.parent = None
 
     def f(self):
-        return self.g + self.h # *2 weight goes here
+        return self.g + self.h  # *2 weight goes here
 
-    def __lt__(self, other): # for priority queue
+    def __lt__(self, other: "Node"):  # for frontier priority queue
         return self.f() < other.f()
 
-    def __eq__(self, other):
+    def __eq__(self, other: "Node"):
         return self.x == other.x and self.y == other.y
 
     def __str__(self):
         return f"({self.x}, {self.y})"
 
 
-def h1(goal, node):
-    return math.sqrt((goal.x - node.x) ** 2 + (goal.y - node.y) ** 2) * 2
-
-
-def h2(goal, node):
-    return abs(goal.x - node.x) + abs(goal.y - node.y)
-
-
-# Heuristic function - can be changed
-def h(goal, node):
-    return h1(goal, node)
-
-
+# algo
 def astar(maze, start, goal):
     """
     A* search
@@ -60,7 +58,7 @@ def astar(maze, start, goal):
     goal_node = Node(*goal)
 
     frontier = []  # frontier - priority queue
-    visited = [] # set()
+    visited = []  # used as a set (required for vizualization)
 
     heapq.heappush(frontier, start_node)
 
@@ -80,7 +78,8 @@ def astar(maze, start, goal):
 
             if next_node in visited:  # skip if already visited
                 continue
-            if next_node.x < 0 or next_node.y < 0 or next_node.x >= len(maze) or next_node.y >= len(maze[0]):  # skip if out of borders
+            if next_node.x < 0 or next_node.y < 0 or next_node.x >= len(maze) or next_node.y >= len(
+                    maze[0]):  # skip if out of borders
                 continue
             if maze[next_node.x][next_node.y] == 1:  # skip if a wall
                 continue
@@ -88,8 +87,8 @@ def astar(maze, start, goal):
             next_node.parent = curr_node
             next_node.g = curr_node.g + 1
             next_node.h = h(goal_node, next_node)
-            
-            heapq.heappush(frontier, next_node) # push to the frontier
+
+            heapq.heappush(frontier, next_node)  # push to the frontier
     return -1, ([], visited)  # if no goal found
 
 
@@ -100,6 +99,7 @@ def vizualize(viz):
     Parameters:
     - viz: everything required for step-by-step vizualization
     """
+    
     path, visited = viz
 
     fig, ax = plt.subplots()
@@ -133,7 +133,7 @@ def vizualize(viz):
     # choose display format
     anim.save('animation.mp4', writer='ffmpeg')
     # anim.save('animation.gif', writer='pillow')
-    
+
     return anim
 
 
@@ -151,8 +151,8 @@ def vizualize(viz):
 #     [0, 0, 0, 1, 1, 0, 0, 0, 0, 0]
 # ]
 
-# start_position = Cell(0, 0)
-# finish_position = Cell(9, 9)
+# start_position = (0, 0)
+# finish_position = (9, 9)
 
 
 maze = [
