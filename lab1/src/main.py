@@ -100,11 +100,9 @@ def astar(maze, start, goal, H=h1):
             next_node.parent = curr_node
             next_node.g = curr_node.g + 1
             next_node.h = H(goal_node, next_node)
-
-            entry = next((q for q in frontier if q.x == next_node.x and q.y == next_node.y),
-                         None)  # queue entry with same coordinates if such exists or none
-            if not entry:
-                heapq.heappush(frontier, next_node)  # push to the frontier
+            
+            if not any((entry.x, entry.y) == (next_node.x, next_node.y) for entry in frontier):
+                heapq.heappush(frontier, next_node)
 
     return -1, ([], visited)  # if no goal found
 
