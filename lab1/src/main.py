@@ -2,22 +2,19 @@ import heapq
 import math
 import copy
 
+COLAB = 0
+
 from matplotlib import rc
-rc('animation')  # , writer='ffmpeg')
+
+if COLAB:
+    rc('animation', html='jshtml')
+else:
+    rc('animation')
+
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.colors import ListedColormap
 
-
-# heuristics
-def h1(goal: "Node", node: "Node"):
-    return math.sqrt((goal.x - node.x) ** 2 + (goal.y - node.y) ** 2) * 2
-
-def h2(goal: "Node", node: "Node"):
-    return abs(goal.x - node.x) + abs(goal.y - node.y)
-
-def h(goal: "Node", node: "Node"):
-    return h1(goal, node)
 
 # node
 class Node:
@@ -39,8 +36,23 @@ class Node:
         return f"({self.x}, {self.y})"
 
 
+# heuristics
+def h1(goal: "Node", node: "Node"):
+    return math.sqrt((goal.x - node.x) ** 2 + (goal.y - node.y) ** 2) * 2
+
+
+# https://en.wikipedia.org/wiki/Taxicab_geometry
+def h2(goal: "Node", node: "Node"):
+    return abs(goal.x - node.x) + abs(goal.y - node.y) * 2
+
+
+# https://en.wikipedia.org/wiki/Chebyshev_distance
+def h3(goal: "Node", node: "Node"):
+    return max(abs(goal.x - node.x), abs(goal.y - node.y)) * 2
+
+
 # algo
-def astar(maze, start, goal):
+def astar(maze, start, goal, H=h1):
     """
     A* search
 
@@ -71,6 +83,7 @@ def astar(maze, start, goal):
             while curr_node:  # backtrack
                 path.append((curr_node.x, curr_node.y))  # path is reversed here
                 curr_node = curr_node.parent
+            path.reverse()
             return len(path), (path, visited)
 
         for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0)]:  # actions (down, right, up, left)
@@ -86,9 +99,13 @@ def astar(maze, start, goal):
 
             next_node.parent = curr_node
             next_node.g = curr_node.g + 1
-            next_node.h = h(goal_node, next_node)
+            next_node.h = H(goal_node, next_node)
 
-            heapq.heappush(frontier, next_node)  # push to the frontier
+            entry = next((q for q in frontier if q.x == next_node.x and q.y == next_node.y),
+                         None)  # queue entry with same coordinates if such exists or none
+            if not entry:
+                heapq.heappush(frontier, next_node)  # push to the frontier
+
     return -1, ([], visited)  # if no goal found
 
 
@@ -99,7 +116,7 @@ def vizualize(viz):
     Parameters:
     - viz: everything required for step-by-step vizualization
     """
-    
+
     path, visited = viz
 
     fig, ax = plt.subplots()
@@ -131,8 +148,9 @@ def vizualize(viz):
     anim = animation.FuncAnimation(fig, update, frames=len(visited) + 5, interval=100)
 
     # choose display format
-    anim.save('animation.mp4', writer='ffmpeg')
-    # anim.save('animation.gif', writer='pillow')
+    if not COLAB:
+        anim.save('animation.mp4', writer='ffmpeg')
+        # anim.save('animation.gif', writer='pillow')
 
     return anim
 
@@ -191,7 +209,8 @@ maze = [
 start_position = (0, 0)
 finish_position = (29, 29)
 
-num_steps, viz = astar(maze, start_position, finish_position)
+num_steps, viz = astar(maze, start_position,
+                       finish_position)  # heuristics function can be added as a 4th argument; default h1
 
 # Print number of steps in path
 if num_steps != -1:
