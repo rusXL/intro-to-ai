@@ -17,7 +17,7 @@ class Node:
         self.parent = None
 
     def f(self):
-        return self.g + self.h
+        return self.g + self.h # *2 weight goes here
 
     def __lt__(self, other): # for priority queue
         return self.f() < other.f()
@@ -73,7 +73,7 @@ def astar(maze, start, goal):
             while curr_node:  # backtrack
                 path.append((curr_node.x, curr_node.y))  # path is reversed here
                 curr_node = curr_node.parent
-            return len(path), path, visited
+            return len(path), (path, visited)
 
         for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0)]:  # actions (down, right, up, left)
             next_node = Node(curr_node.x + dx, curr_node.y + dy)
@@ -90,16 +90,17 @@ def astar(maze, start, goal):
             next_node.h = h(goal_node, next_node)
             
             heapq.heappush(frontier, next_node) # push to the frontier
-    return -1, [], visited  # if no goal found
+    return -1, ([], visited)  # if no goal found
 
 
-def vizualize(maze, path, visited):
+def vizualize(viz):
     """
     Vizualization function. Shows step by step the work of the search algorithm
 
     Parameters:
     - viz: everything required for step-by-step vizualization
     """
+    path, visited = viz
 
     fig, ax = plt.subplots()
     ax.set_xticks([])
@@ -190,7 +191,7 @@ maze = [
 start_position = (0, 0)
 finish_position = (29, 29)
 
-num_steps, path, visited = astar(maze, start_position, finish_position)
+num_steps, viz = astar(maze, start_position, finish_position)
 
 # Print number of steps in path
 if num_steps != -1:
@@ -200,4 +201,4 @@ else:
     print(f"No path from {start_position} to {finish_position} exists.")
 
 # Vizualize algorithm step-by-step even if the path was not found
-vizualize(maze, path, visited)
+vizualize(viz)
