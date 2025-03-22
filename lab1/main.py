@@ -9,16 +9,18 @@ import matplotlib.animation as animation
 from matplotlib.colors import ListedColormap
 
 
-# Class for representing one cell on a grid
-class Cell:
+# Class for representing one node on a grid
+class Node:
     def __init__(self, x, y) -> None:
-        self.x = x
-        self.y = y
-        self.f, self.g, self.h = 0, 0, 0
+        self.x, self.y = x, y
+        self.g, self.h = 0, 0
         self.parent = None
 
-    def __lt__(self, other):
-        return self.f < other.f
+    def f(self):
+        return self.g + self.h
+
+    def __lt__(self, other): # for priority queue
+        return self.f() < other.f()
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
@@ -27,77 +29,67 @@ class Cell:
         return f"({self.x}, {self.y})"
 
 
-def h1(finish, cell):
-    return math.sqrt((finish.x - cell.x) ** 2 + (finish.y - cell.y) ** 2) * 2
+def h1(goal, node):
+    return math.sqrt((goal.x - node.x) ** 2 + (goal.y - node.y) ** 2) * 2
 
 
-def h2(finish, cell):
-    return abs(finish.x - cell.x) + abs(finish.y - cell.y)
+def h2(goal, node):
+    return abs(goal.x - node.x) + abs(goal.y - node.y)
 
 
 # Heuristic function - can be changed
-def H(finish, cell):
-    return h1(finish, cell)
+def h(goal, node):
+    return h1(goal, node)
 
 
-def astar(maze, start, finish):
+def astar(maze, start, goal):
     """
     A* search
 
     Parameters:
     - maze: The 2D matrix that represents the maze with 0 represents empty space and 1 represents a wall
     - start: A tuple with the coordinates of starting position
-    - finish: A tuple with the coordinates of finishing position
+    - goal: A tuple with the coordinates of finishing position
 
     Returns:
-    - Number of steps from start to finish, equals -1 if the path is not found
+    - Number of steps from start to goal, equals -1 if the path is not found
     - Viz - everything required for step-by-step visualisation
     """
 
-    queue = []  # frontier
-    visited = []
+    start_node = Node(*start)
+    goal_node = Node(*goal)
 
-    heapq.heappush(queue, start)
+    frontier = []  # frontier - priority queue
+    visited = [] # set()
 
-    while queue:  # while frontier is not empty
-        curr = heapq.heappop(queue)  # pick a cell from a frontier
-        visited.append(curr)  # mark the cell as visited
+    heapq.heappush(frontier, start_node)
 
-        if curr.x == finish.x and curr.y == finish.y:  # if cell is a goal
+    while frontier:  # while frontier is not empty
+        curr_node = heapq.heappop(frontier)  # pick a node from a frontier
+        visited.append(curr_node)  # mark the node as visited
+
+        if curr_node.x == goal_node.x and curr_node.y == goal_node.y:  # if node is a goal
             path = []
-            while curr is not None:  # backtrack
-                path.append((curr.x, curr.y))  # path is reversed here
-                curr = curr.parent
-            path.reverse()
+            while curr_node:  # backtrack
+                path.append((curr_node.x, curr_node.y))  # path is reversed here
+                curr_node = curr_node.parent
             return len(path), path, visited
 
-        deltas = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # actions (down, right, up, left)
-        for delta in deltas:
-            next_cell = Cell(curr.x + delta[0], curr.y + delta[1])
+        for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0)]:  # actions (down, right, up, left)
+            next_node = Node(curr_node.x + dx, curr_node.y + dy)
 
-            if next_cell in visited:  # skip if already visited
+            if next_node in visited:  # skip if already visited
                 continue
-            if next_cell.x < 0 or next_cell.y < 0 or next_cell.x >= len(maze) or next_cell.y >= len(
-                    maze[0]):  # skip if out of borders
+            if next_node.x < 0 or next_node.y < 0 or next_node.x >= len(maze) or next_node.y >= len(maze[0]):  # skip if out of borders
                 continue
-            if maze[next_cell.x][next_cell.y] == 1:  # skip if a wall
+            if maze[next_node.x][next_node.y] == 1:  # skip if a wall
                 continue
 
-            next_cell.g = curr.g + 1  # update steps needed to reach this cell
-            next_cell.h = H(finish, next_cell)
-            next_cell.f = next_cell.g + next_cell.h * 2 # <- weight
-            next_cell.parent = curr
-
-            entry = next((q for q in queue if q.x == next_cell.x and q.y == next_cell.y),
-                         None)  # queue entry with same coordinates if such exists or none
-            if entry:
-                # if it is possible to reach same cell (which is already in the queue) from a different (next_cell) path with a lower cost g
-                if next_cell.g < entry.g:
-                    entry.g, entry.h, entry.f = next_cell.g, next_cell.h, next_cell.f
-                    entry.parent = next_cell.parent
-                    heapq.heapify(queue)  # resort
-            else:
-                heapq.heappush(queue, next_cell)
+            next_node.parent = curr_node
+            next_node.g = curr_node.g + 1
+            next_node.h = h(goal_node, next_node)
+            
+            heapq.heappush(frontier, next_node) # push to the frontier
     return -1, [], visited  # if no goal found
 
 
@@ -125,14 +117,14 @@ def vizualize(maze, path, visited):
     # Animation function
     def update(frame):
         if frame < len(visited):
-            cell = visited[frame]
-            anim_maze[cell.x][cell.y] = 4  # Mark visited path
+            node = visited[frame]
+            anim_maze[node.x][node.y] = 4  # Mark visited path
         else:
-            for cell in path:
-                anim_maze[cell[0]][cell[1]] = 3
+            for node in path:
+                anim_maze[node[0]][node[1]] = 3
 
-        anim_maze[start_position.x][start_position.y] = 2
-        anim_maze[finish_position.x][finish_position.y] = 2
+        anim_maze[start_position[0]][start_position[1]] = 2
+        anim_maze[finish_position[0]][finish_position[1]] = 2
         maze_display.set_data(anim_maze)
 
     anim = animation.FuncAnimation(fig, update, frames=len(visited) + 5, interval=100)
@@ -195,8 +187,8 @@ maze = [
     [1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0]
 ]
 
-start_position = Cell(0, 0)
-finish_position = Cell(29, 29)
+start_position = (0, 0)
+finish_position = (29, 29)
 
 num_steps, path, visited = astar(maze, start_position, finish_position)
 
