@@ -1,4 +1,5 @@
 import unittest
+from main import astar, Node, h1, h2, h3
 
 big_maze = [
     [1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1],
