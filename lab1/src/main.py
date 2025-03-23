@@ -38,17 +38,17 @@ class Node:
 
 # heuristics
 def h1(goal: "Node", node: "Node"):
-    return math.sqrt((goal.x - node.x) ** 2 + (goal.y - node.y) ** 2) * 2
+    return math.sqrt((goal.x - node.x) ** 2 + (goal.y - node.y) ** 2)
 
 
 # https://en.wikipedia.org/wiki/Taxicab_geometry
 def h2(goal: "Node", node: "Node"):
-    return abs(goal.x - node.x) + abs(goal.y - node.y) * 2
+    return abs(goal.x - node.x) + abs(goal.y - node.y)
 
 
 # https://en.wikipedia.org/wiki/Chebyshev_distance
 def h3(goal: "Node", node: "Node"):
-    return max(abs(goal.x - node.x), abs(goal.y - node.y)) * 2
+    return max(abs(goal.x - node.x), abs(goal.y - node.y))
 
 
 # algo
