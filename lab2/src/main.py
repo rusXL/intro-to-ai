@@ -50,7 +50,7 @@ def utility(state: State) -> int:
         return 1 if sum(board) == 1 else -1
 
 
-def max_move(state: State) -> tuple[Action, int]:
+def max_move(state: State, alpha: float, beta: float) -> tuple[Action, int]:
     if terminal(state):
         return None, utility(state)
 
@@ -58,16 +58,21 @@ def max_move(state: State) -> tuple[Action, int]:
     value = float("-inf")
 
     for a in actions(state):
-        _, v = min_move(result(state, a))
+        _, v = min_move(result(state, a), alpha, beta)
 
         if v > value:
             action = a
             value = v
 
+        # pruning
+        if value >= beta:
+            break
+        alpha = max(alpha, value)
+
     return action, value
 
 
-def min_move(state: State) -> tuple[Action, int]:
+def min_move(state: State, alpha: float, beta: float) -> tuple[Action, int]:
     if terminal(state):
         return None, utility(state)
 
@@ -75,11 +80,16 @@ def min_move(state: State) -> tuple[Action, int]:
     value = float("inf")
 
     for a in actions(state):
-        _, v = max_move(result(state, a))
+        _, v = max_move(result(state, a), alpha, beta)
 
         if v < value:
             action = a
             value = v
+
+        # pruning
+        if value <= alpha:
+            break
+        beta = min(beta, value)
 
     return action, value
 
@@ -108,7 +118,7 @@ if __name__ == "__main__":
 
         if turn % 2 == 0:  # AI's Turn
             print("AI's turn ")
-            action, _ = max_move(state)
+            action, _ = max_move(state, float("-inf"), float("inf"))
 
             print(f"AI removes {action[1]} stick(s) from pile {action[0]}")
         else:  # User's Turn
