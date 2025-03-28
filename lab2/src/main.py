@@ -40,25 +40,41 @@ def utility(state: State) -> int:
         -1: if the User won
         +1: if the AI won
     """
-    board, turn = state  # Unpack the state
+    board, turn = state
 
     # if one is left with 1 stick, it loses
-    # if one is left with 0 sticks, one wins
+    # if one is left with 0 sticks, it wins
     if turn % 2 == 0:  # AI's turn
         return -1 if sum(board) == 1 else 1
     else:  # User's turn
         return 1 if sum(board) == 1 else -1
 
 
-def max_move(state: State, alpha: float, beta: float) -> tuple[Action, int]:
+def evaluate(state: State) -> int:
+    """Heuristic evaluation function for non-terminal states based on Nim-Sum."""
+    board, turn = state
+    nim_sum = 0
+
+    for pile in board:
+        nim_sum ^= pile
+
+    if turn % 2 == 0:  # AI's turn
+        return -1 if nim_sum == 0 else 1
+    else:  # User's turn
+        return 1 if nim_sum == 0 else -1
+
+
+def max_move(state: State, alpha: float, beta: float, depth: int) -> tuple[Action, int]:
     if terminal(state):
         return None, utility(state)
+    if depth == 0:
+        return None, evaluate(state)
 
     action = None
     value = float("-inf")
 
     for a in actions(state):
-        _, v = min_move(result(state, a), alpha, beta)
+        _, v = min_move(result(state, a), alpha, beta, depth - 1)
 
         if v > value:
             action = a
@@ -72,15 +88,17 @@ def max_move(state: State, alpha: float, beta: float) -> tuple[Action, int]:
     return action, value
 
 
-def min_move(state: State, alpha: float, beta: float) -> tuple[Action, int]:
+def min_move(state: State, alpha: float, beta: float, depth: int) -> tuple[Action, int]:
     if terminal(state):
         return None, utility(state)
+    if depth == 0:
+        return None, evaluate(state)
 
     action = None
     value = float("inf")
 
     for a in actions(state):
-        _, v = max_move(result(state, a), alpha, beta)
+        _, v = max_move(result(state, a), alpha, beta, depth - 1)
 
         if v < value:
             action = a
@@ -118,7 +136,7 @@ if __name__ == "__main__":
 
         if turn % 2 == 0:  # AI's Turn
             print("AI's turn ")
-            action, _ = max_move(state, float("-inf"), float("inf"))
+            action, _ = max_move(state, float("-inf"), float("inf"), 5)
 
             print(f"AI removes {action[1]} stick(s) from pile {action[0]}")
         else:  # User's Turn
