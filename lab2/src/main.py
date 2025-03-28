@@ -125,8 +125,16 @@ def min_move(state: State, alpha: float, beta: float, depth: int) -> tuple[Actio
 
 
 # TODO: you are encouraged to refactor ⬇️⬇️⬇️
-# you can add better visualisation for the board
+# you can add better visualization for the board
 # or improve input handling
+
+
+def print_board(board):
+    """Visualize the board with stick emojis."""
+    print(board)
+    # for i, sticks in enumerate(board):
+    #     if sticks > 0:
+    #         print(f"Pile {i}: {'| ' * sticks}")
 
 
 def init_game() -> State:
@@ -145,7 +153,7 @@ def init_game() -> State:
 
 
 def end_game(state: State):
-    print(f"Board: {state[0]}")
+    print_board(state[0])
 
     if utility(state) == 1:
         print("AI Wins! 🤖🏆")
@@ -160,7 +168,7 @@ if __name__ == "__main__":
     while not terminal(state):
         board, turn = state
 
-        print(f"Board: {board}")
+        print_board(state[0])
 
         if turn % 2 == 0:  # AI's Turn
             action, _ = max_move(state, float("-inf"), float("inf"), DEPTH)
