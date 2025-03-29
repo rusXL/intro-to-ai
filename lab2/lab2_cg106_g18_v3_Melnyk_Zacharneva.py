@@ -1,9 +1,25 @@
 import copy
 from typing import TypeAlias
+from enum import Enum
 
 Board: TypeAlias = list[int]
 State: TypeAlias = tuple[Board, int]
 Action: TypeAlias = tuple[int, int]
+
+
+class Player(Enum):
+    AI = 1
+    USER = -1
+
+
+def player(state: State) -> Player:
+    """Which player is to move at `state`."""
+    _, turn = state
+
+    if turn % 2 == 0:
+        return Player.AI
+    else:
+        return Player.USER
 
 
 def actions(state: State) -> list[Action]:
@@ -38,28 +54,34 @@ def utility(state: State) -> int:
     -1: if User wins.
     +1: if AI wins.
     """
-    board, turn = state
+    board, _ = state
 
     # if one is left with 1 stick, it loses
     # if one is left with 0 sticks, it wins
-    if turn % 2 == 0:  # AI's turn
-        return -1 if sum(board) == 1 else 1
-    else:  # User's turn
-        return 1 if sum(board) == 1 else -1
+    lose = sum(board) == 1
+
+    match player(state):
+        case Player.AI:
+            return Player.USER.value if lose else Player.AI.value
+        case Player.USER:
+            return Player.AI.value if lose else Player.USER.value
 
 
 def evaluate(state: State) -> int:
     """Estimates expected utility of the game from the `state`. Heuristic evaluation based on Nim-Sum."""
-    board, turn = state
+    board, _ = state
     nim_sum = 0
 
     for pile in board:
         nim_sum ^= pile
 
-    if turn % 2 == 0:  # AI's turn
-        return -1 if nim_sum == 0 else 1
-    else:  # User's turn
-        return 1 if nim_sum == 0 else -1
+    lose = nim_sum == 0
+
+    match player(state):
+        case Player.AI:
+            return Player.USER.value if lose else Player.AI.value
+        case Player.USER:
+            return Player.AI.value if lose else Player.USER.value
 
 
 def max_move(state: State, alpha: float, beta: float, depth: int) -> tuple[Action, int]:
@@ -126,7 +148,7 @@ def min_move(state: State, alpha: float, beta: float, depth: int) -> tuple[Actio
 
 # TODO: you are encouraged to refactor ⬇️⬇️⬇️
 # you can add better visualization for the board
-# or improve input handling
+# and improve input handling
 
 
 def print_board(board):
@@ -149,7 +171,7 @@ def init_game() -> State:
 
     print("Example Action: to remove 3 sticks from pile 2, enter: 2 3")
 
-    return (board, 1)  # initial state (board, turn)
+    return (board, 1)  # initial state (board, turn); user always starts first
 
 
 def end_game(state: State):
@@ -166,30 +188,27 @@ if __name__ == "__main__":
     state = init_game()
 
     while not terminal(state):
-        board, turn = state
-
         print_board(state[0])
 
-        if turn % 2 == 0:  # AI's Turn
-            action, _ = max_move(state, float("-inf"), float("inf"), DEPTH)
-            print(f"AI removes {action[1]} stick(s) from pile {action[0]}")
-        else:  # User's Turn
-            while True:
-                try:
-                    action = tuple(
-                        map(
-                            int,
-                            input("Your move: ").split(),
+        match player(state):
+            case Player.AI:
+                action, _ = max_move(state, float("-inf"), float("inf"), DEPTH)
+                print(f"AI removes {action[1]} stick(s) from pile {action[0]}")
+            case Player.USER:
+                while True:
+                    try:
+                        action = tuple(
+                            map(
+                                int,
+                                input("Your move: ").split(),
+                            )
                         )
-                    )
-                    if action in actions(state):
-                        break
-                    print("Try again")
-                except ValueError:
-                    print("Try again")
+                        if action in actions(state):
+                            break
+                        print("Try again")
+                    except ValueError:
+                        print("Try again")
 
         state = result(state, action)  # transition
 
     end_game(state)
-
-    # Game Over Message
