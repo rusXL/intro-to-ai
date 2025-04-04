@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
         match get_player(state):
             case Player.AI:
-                action, _ = minimax(state, float("-inf"), float("inf"), DEPTH, True, None, graph)
+                action, _ = minimax(state, float("-inf"), float("inf"), DEPTH, True)
                 print(f"AI removes {action.sticks} stick(s) from pile {action.pile}")
 
             case Player.USER:
