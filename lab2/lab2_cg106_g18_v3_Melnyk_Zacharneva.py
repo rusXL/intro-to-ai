@@ -58,8 +58,6 @@ def minimax(state: State, alpha: float, beta: float, depth: int, is_max: bool) -
     action = None  # best action
     value = float("-inf") if is_max else float("inf")
 
-    current_node_id = graph.node_id
-
     for i, sticks in enumerate(state.board):
         for j in range(1, sticks + 1):
           a = Action(i, j)
