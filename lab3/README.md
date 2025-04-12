@@ -1,11 +1,13 @@
-# EARIN 2024 Lab3: Evolutionary and genetic algorithms
+# Lab 3 - CG106 Group 18
 
-## Repo setup
+## Report
 
-* Create and activate python environment. You can use either [venv](https://docs.python.org/3/library/venv.html)
-  or [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#activating-an-environment).
-* Install the required packages:
+The full lab report can be found in the same directory as this README:
 
-```bash
-pip install -r requirements.txt
-```
+📄 **lab3_cg106_g18_v3_Melnyk_Zacharneva.pdf**
+
+## Code
+
+The code for this lab is available on Google Colab:
+
+🔗 [Open in Colab](https://colab.research.google.com/drive/1BpSleEvFzGIQtDNBche4prU2K3C-xQzI?usp=sharing)
