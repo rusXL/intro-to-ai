@@ -1,0 +1,87 @@
+import random
+
+import numpy as np
+from sklearn.model_selection import cross_val_score, train_test_split, GridSearchCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+
+from datasets import load_dataset
+
+
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+
+
+if __name__ == "__main__":
+    # Set seed for reproducibility
+    seed = 18
+    set_seed(seed)
+
+    # Load dataset
+    X, y = load_dataset("iris")
+
+    # Preprocess
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+
+    # Split data into train and test partitions with 80% train and 20% test
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=seed
+    )
+
+    # Models
+    log_reg = LogisticRegression(random_state=18)
+    rf_clf = RandomForestClassifier(random_state=18)
+
+    log_reg_params = {
+        "C": [0.01, 0.1, 1, 10],  # Regularization strength
+        "solver": ["lbfgs", "liblinear"],  # Solver algorithm
+        "max_iter": [100, 200, 300],  # Maximum number of iterations
+    }
+
+    rf_clf_params = {
+        "n_estimators": [50, 100, 150],  # Number of trees
+        "max_depth": [None, 10, 20, 30],  # Max depth of each tree
+        "min_samples_split": [2, 5, 10],  # Min samples to split
+        "min_samples_leaf": [1, 2, 4],  # Min samples at leaf
+    }
+
+    # Grid Search with Cross-Validation
+    log_reg_grid = GridSearchCV(log_reg, log_reg_params, cv=4, scoring="accuracy")
+    log_reg_grid.fit(X_train, y_train)
+    best_log_reg = log_reg_grid.best_estimator_
+
+    rf_clf_grid = GridSearchCV(rf_clf, rf_clf_params, cv=4, scoring="accuracy")
+    rf_clf_grid.fit(X_train, y_train)
+    best_rf_clf = rf_clf_grid.best_estimator_
+
+    print("Best Logistic Regression Accuracy: %.2f" % log_reg_grid.best_score_)
+    print("Best Logistic Regression Params:", log_reg_grid.best_params_)
+
+    print("Best Random Forest Accuracy: %.2f" % rf_clf_grid.best_score_)
+    print("Best Random Forest Params:", rf_clf_grid.best_params_)
+
+    # Fit the best model on the entire training set and get the predictions
+    final_log_reg = best_log_reg.fit(X_train, y_train)
+    final_rf_clf = best_rf_clf.fit(X_train, y_train)
+
+    log_reg_predictions = final_log_reg.predict(X_test)
+    rf_clf_predictions = final_rf_clf.predict(X_test)
+
+    # Evaluate final predictions
+    log_reg_accuracy = accuracy_score(y_test, log_reg_predictions)
+    print("\nLogistic Regression Test Accuracy: %.2f" % log_reg_accuracy)
+    print(
+        "Logistic Regression Classification Report:\n",
+        classification_report(y_test, log_reg_predictions),
+    )
+
+    rf_clf_accuracy = accuracy_score(y_test, rf_clf_predictions)
+    print("Random Forest Test Accuracy: %.2f" % rf_clf_accuracy)
+    print(
+        "Random Forest Classification Report:\n",
+        classification_report(y_test, rf_clf_predictions),
+    )
