@@ -1,6 +1,7 @@
 import random
 
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import cross_val_score, train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
@@ -54,13 +55,41 @@ if __name__ == "__main__":
     log_reg_grid.fit(X_train, y_train)
     best_log_reg = log_reg_grid.best_estimator_
 
+    # Save the results
+    log_reg_results = pd.DataFrame(log_reg_grid.cv_results_)
+    log_reg_results = log_reg_results.sort_values(by="mean_test_score", ascending=False)
+    log_reg_results = log_reg_results[
+        [
+            "param_C",
+            "param_solver",
+            "param_max_iter",
+            "mean_test_score",
+            "std_test_score",
+        ]
+    ]
+    log_reg_results.to_csv("log_reg.csv", sep=";", index=False)
+    print("Best Logistic Regression Accuracy: %.2f" % log_reg_grid.best_score_)
+    print("Best Logistic Regression Params:", log_reg_grid.best_params_)
+
+    # Grid Search with Cross-Validation
     rf_clf_grid = GridSearchCV(rf_clf, rf_clf_params, cv=4, scoring="accuracy")
     rf_clf_grid.fit(X_train, y_train)
     best_rf_clf = rf_clf_grid.best_estimator_
 
-    print("Best Logistic Regression Accuracy: %.2f" % log_reg_grid.best_score_)
-    print("Best Logistic Regression Params:", log_reg_grid.best_params_)
-
+    # Save the results
+    rf_clf_results = pd.DataFrame(rf_clf_grid.cv_results_)
+    rf_clf_results = rf_clf_results.sort_values(by="mean_test_score", ascending=False)
+    rf_clf_results = rf_clf_results[
+        [
+            "param_n_estimators",
+            "param_max_depth",
+            "param_min_samples_split",
+            "param_min_samples_leaf",
+            "mean_test_score",
+            "std_test_score",
+        ]
+    ]
+    rf_clf_results.to_csv("rf_clf.csv", sep=";", index=False)
     print("Best Random Forest Accuracy: %.2f" % rf_clf_grid.best_score_)
     print("Best Random Forest Params:", rf_clf_grid.best_params_)
 
@@ -72,15 +101,11 @@ if __name__ == "__main__":
     rf_clf_predictions = final_rf_clf.predict(X_test)
 
     # Evaluate final predictions
-    log_reg_accuracy = accuracy_score(y_test, log_reg_predictions)
-    print("\nLogistic Regression Test Accuracy: %.2f" % log_reg_accuracy)
     print(
         "Logistic Regression Classification Report:\n",
         classification_report(y_test, log_reg_predictions),
     )
 
-    rf_clf_accuracy = accuracy_score(y_test, rf_clf_predictions)
-    print("Random Forest Test Accuracy: %.2f" % rf_clf_accuracy)
     print(
         "Random Forest Classification Report:\n",
         classification_report(y_test, rf_clf_predictions),
