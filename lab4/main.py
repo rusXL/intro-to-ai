@@ -10,6 +10,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 
+from datasets import load_dataset
+
 def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
