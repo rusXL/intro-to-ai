@@ -2,18 +2,41 @@ import random
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
 from sklearn.model_selection import cross_val_score, train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 
-from datasets import load_dataset
-
-
 def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
+
+def drawPCA():
+  # Load data
+  iris = sklearn.datasets.load_iris()
+  X = iris.data
+  y = iris.target
+  target_names = iris.target_names
+
+  # Reduce to 2D using PCA
+  pca = PCA(n_components=2)
+  X_r = pca.fit_transform(X)
+
+  # Plot
+  plt.figure(figsize=(8, 6))
+  colors = ['navy', 'turquoise', 'darkorange']
+  for color, i, target_name in zip(colors, [0, 1, 2], target_names):
+    plt.scatter(X_r[y == i, 0], X_r[y == i, 1], alpha=0.7, label=target_name, color=color)
+
+  plt.legend()
+  plt.title('PCA of IRIS dataset')
+  plt.xlabel('Principal Component 1')
+  plt.ylabel('Principal Component 2')
+  plt.grid(True)
+  plt.show()
 
 
 if __name__ == "__main__":
@@ -38,16 +61,17 @@ if __name__ == "__main__":
     rf_clf = RandomForestClassifier(random_state=18)
 
     log_reg_params = {
-        "C": [0.01, 0.1, 1, 10],  # Regularization strength
-        "solver": ["lbfgs", "liblinear"],  # Solver algorithm
-        "max_iter": [100, 200, 300],  # Maximum number of iterations
+        "C": [0.01, 0.1, 1, 10, 100],  # Regularization strength
+        "solver": ["lbfgs", "newton-cg"],  # Solver algorithm
+        "max_iter": [100, 200, 500, 1000],  # Maximum number of iterations
     }
 
     rf_clf_params = {
-        "n_estimators": [50, 100, 150],  # Number of trees
-        "max_depth": [None, 10, 20, 30],  # Max depth of each tree
+        "n_estimators": [50, 100, 200],  # Number of trees
+        "max_depth": [None, 5, 10, 20],  # Max depth of each tree
         "min_samples_split": [2, 5, 10],  # Min samples to split
         "min_samples_leaf": [1, 2, 4],  # Min samples at leaf
+        "bootstrap":	[True, False],
     }
 
     # Grid Search with Cross-Validation
@@ -110,3 +134,4 @@ if __name__ == "__main__":
         "Random Forest Classification Report:\n",
         classification_report(y_test, rf_clf_predictions),
     )
+    drawPCA()
