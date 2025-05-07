@@ -15,8 +15,8 @@ class QLearner:
     def __init__(
         self,
         #
-        state_space: int,
-        action_space: int,
+        state_space,
+        action_space,
         #
         learning_rate: float,
         discount: float,
@@ -79,6 +79,7 @@ epsilon_decay_fn = lambda epsilon: max(final_epsilon, epsilon - epsilon_decay)
 
 env = gym.make("CliffWalking-v0")
 env = gym.wrappers.RecordEpisodeStatistics(env, buffer_length=n_episodes)
+env.action_space.seed(seed)
 
 agent = QLearner(
     env.observation_space,
@@ -93,7 +94,7 @@ agent = QLearner(
 
 
 for episode in tqdm(range(n_episodes)):
-    state, _ = env.reset()
+    state, _ = env.reset(seed=seed)
     done = False
 
     while not done:
