@@ -146,7 +146,7 @@ def plot_q_values_map(qtable, length, width):
     qtable_val_max, qtable_directions = qtable_directions_map(qtable, length, width)
 
     # Plot the last frame
-    fig, ax = plt.subplots(figsize=(10, 8))  # 15, 5
+    fig, ax = plt.subplots(figsize=(12, 4))  # 15, 5
 
     # Plot the policy
     sns.heatmap(
@@ -167,7 +167,7 @@ def plot_q_values_map(qtable, length, width):
         spine.set_linewidth(0.7)
         spine.set_color("black")
 
-    fig.savefig("q_table.png", bbox_inches="tight")
+    fig.savefig("plots/q_table.png", bbox_inches="tight")
 
 
 plot_q_values_map(agent.table, 4, 12)
@@ -185,22 +185,51 @@ def get_moving_avgs(arr, window, convolution_mode):
 
 # Smooth over a 500 episode window
 rolling_length = 500
-fig, axs = plt.subplots(ncols=3, figsize=(12, 5))
 
-axs[0].set_title("Episode rewards")
+fig, ax = plt.subplots(figsize=(8, 5))
+ax.set_title("Episode rewards")
 reward_moving_average = get_moving_avgs(env.return_queue, rolling_length, "valid")
-axs[0].plot(range(len(reward_moving_average)), reward_moving_average)
+ax.plot(range(len(reward_moving_average)), reward_moving_average)
+plt.tight_layout()
+plt.savefig("plots/rewards.png")
+plt.close()
 
-axs[1].set_title("Episode lengths")
+fig, ax = plt.subplots(figsize=(8, 5))
+ax.set_title("Episode lengths")
 length_moving_average = get_moving_avgs(env.length_queue, rolling_length, "valid")
-axs[1].plot(range(len(length_moving_average)), length_moving_average)
+ax.plot(range(len(length_moving_average)), length_moving_average)
+plt.tight_layout()
+plt.savefig("plots/lengths.png")
+plt.close()
 
-axs[2].set_title("Training Error")
+fig, ax = plt.subplots(figsize=(8, 5))
+ax.set_title("Training Error")
 training_error_moving_average = get_moving_avgs(
     agent.training_error, rolling_length, "same"
 )
-axs[2].plot(range(len(training_error_moving_average)), training_error_moving_average)
-
-
+ax.plot(range(len(training_error_moving_average)), training_error_moving_average)
 plt.tight_layout()
-plt.savefig("stats.png")
+plt.savefig("plots/errors.png")
+plt.close()
+
+
+# rolling_length = 500
+# fig, axs = plt.subplots(ncols=3, figsize=(12, 5))
+
+# axs[0].set_title("Episode rewards")
+# reward_moving_average = get_moving_avgs(env.return_queue, rolling_length, "valid")
+# axs[0].plot(range(len(reward_moving_average)), reward_moving_average)
+
+# axs[1].set_title("Episode lengths")
+# length_moving_average = get_moving_avgs(env.length_queue, rolling_length, "valid")
+# axs[1].plot(range(len(length_moving_average)), length_moving_average)
+
+# axs[2].set_title("Training Error")
+# training_error_moving_average = get_moving_avgs(
+#     agent.training_error, rolling_length, "same"
+# )
+# axs[2].plot(range(len(training_error_moving_average)), training_error_moving_average)
+
+
+# plt.tight_layout()
+# plt.savefig("plots/stats.png")
