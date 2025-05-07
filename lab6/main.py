@@ -71,7 +71,7 @@ discount = 0.95
 
 start_epsilon = 1.0
 epsilon_decay = start_epsilon / (n_episodes / 2)
-final_epsilon = 0.1
+final_epsilon = 0.1  # make closer to `start_epsilon` to reduce randomness
 
 
 epsilon_decay_fn = lambda epsilon: max(final_epsilon, epsilon - epsilon_decay)
@@ -89,9 +89,19 @@ agent = QLearner(
     discount,
     #
     start_epsilon,
-    epsilon_decay_fn=epsilon_decay_fn,
+    epsilon_decay_fn=epsilon_decay_fn,  # disable decay
 )
 
+# NOTICE:
+# If the agent takes an action that would move it off the grid,
+# - the environment does not move the agent;
+# - applies default reward (-1);
+# - returns new_state == state, not an error.
+
+# That is why in Q-table you can see that sometimes agent prefers to move out of the grid.
+# Of course this is not optimal, but since the strategy is eps-greedy, it can happen so.
+
+# Try setting eps to 0.75 and disabling decay to remove that noise.
 
 for episode in tqdm(range(n_episodes)):
     state, _ = env.reset(seed=seed)
