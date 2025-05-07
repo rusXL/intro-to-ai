@@ -106,10 +106,64 @@ for episode in tqdm(range(n_episodes)):
         done = terminated or truncated
         state = new_state
 
-
 ##############################################
 
 from matplotlib import pyplot as plt
+import seaborn as sns
+
+sns.set_theme()
+
+
+def qtable_directions_map(qtable, length, width):
+    """Get the best learned action & map it to arrows."""
+
+    qtable_val_max = qtable.max(axis=1).reshape(length, width)
+    qtable_best_action = np.argmax(qtable, axis=1).reshape(length, width)
+    directions = {0: "↑", 1: "→", 2: "↓", 3: "←"}
+
+    qtable_directions = np.empty(qtable_best_action.flatten().shape, dtype=str)
+
+    for idx, val in enumerate(qtable_best_action.flatten()):
+        if qtable_val_max.flatten()[idx] != 0:
+            qtable_directions[idx] = directions[val]
+
+    qtable_directions = qtable_directions.reshape(length, width)
+    return qtable_val_max, qtable_directions
+
+
+def plot_q_values_map(qtable, length, width):
+    """Plot the last frame of the simulation and the policy learned."""
+    qtable_val_max, qtable_directions = qtable_directions_map(qtable, length, width)
+
+    # Plot the last frame
+    fig, ax = plt.subplots(figsize=(10, 8))  # 15, 5
+
+    # Plot the policy
+    sns.heatmap(
+        qtable_val_max,
+        annot=qtable_directions,
+        fmt="",
+        ax=ax,
+        cmap=sns.color_palette("Blues", as_cmap=True),
+        linewidths=0.7,
+        linecolor="black",
+        xticklabels=[],
+        yticklabels=[],
+        annot_kws={"fontsize": "xx-large"},
+        mask=qtable_val_max == 0,
+    ).set(title="Learned Q-entries\nArrows represent best action")
+    for _, spine in ax.spines.items():
+        spine.set_visible(True)
+        spine.set_linewidth(0.7)
+        spine.set_color("black")
+
+    fig.savefig("q_table.png", bbox_inches="tight")
+
+
+plot_q_values_map(agent.table, 4, 12)
+
+
+##############################################
 
 
 def get_moving_avgs(arr, window, convolution_mode):
@@ -139,5 +193,4 @@ axs[2].plot(range(len(training_error_moving_average)), training_error_moving_ave
 
 
 plt.tight_layout()
-# plt.show()
-plt.savefig("plot.png")
+plt.savefig("stats.png")
