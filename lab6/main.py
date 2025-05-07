@@ -1,7 +1,7 @@
 import gymnasium as gym
 import numpy as np
 from tqdm import tqdm
-
+from typing import Callable, Optional
 
 ##############################################
 
@@ -15,14 +15,14 @@ class QLearner:
     def __init__(
         self,
         #
-        state_space,
-        action_space,
+        state_space: gym.Space,
+        action_space: gym.Space,
         #
         learning_rate: float,
         discount: float,
         #
         epsilon: float,
-        epsilon_decay_fn=None,
+        epsilon_decay_fn: Optional[Callable[[float], float]] = None,
     ):
         """Init a Q-table, Save necessary Params."""
         self.state_space = state_space
@@ -54,7 +54,7 @@ class QLearner:
         """Null the Q-table."""
         self.table = np.zeros((self.state_space.n, self.action_space.n))
 
-    def choose_action(self, state):
+    def choose_action(self, state) -> int:
         """Acting Policy: Epsilon-Greedy Strategy."""
         if np.random.random() < self.epsilon:
             action = self.action_space.sample()
