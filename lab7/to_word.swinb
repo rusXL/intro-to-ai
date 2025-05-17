@@ -1,0 +1,76 @@
+<div class="notebook">
+
+<div class="nb-cell program" name="p1">
+word(0, "zero").
+word(1, "one").
+word(2, "two").
+word(3, "three").
+word(4, "four").
+word(5, "five").
+word(6, "six").
+word(7, "seven").
+word(8, "eight").
+word(9, "nine").
+
+word(11, "eleven").
+word(12, "twelve").
+word(13, "thirteen").
+word(14, "fourteen").
+word(15, "fifteen").
+word(16, "sixteen").
+word(17, "seventeen").
+word(18, "eighteen").
+word(19, "nineteen").
+
+word(10, "ten").
+word(20, "twenty").
+word(30, "thirty").
+word(40, "forty").
+word(50, "fifty").
+word(60, "sixty").
+word(70, "seventy").
+word(80, "eighty").
+word(90, "ninety").
+
+to_word(N, W) :- word(N, W), !.
+
+to_word(N, W) :-
+    N &gt; 19,
+    N &lt; 100,
+    D is N // 10 * 10,
+    0 is N mod 10,
+    word(D, W), !.
+
+to_word(N, W) :-
+    N &gt; 19,
+    N &lt; 100,
+    D is N // 10 * 10,
+    word(D, W1),
+    R is N mod 10,
+    R &gt; 0,
+    word(R, W2),
+    atomic_list_concat([W1, W2], " ", W), !.
+
+to_word(N, W) :- 
+    N &gt; 99, 
+    H is N // 100, 
+    word(H, W1),
+    0 is N mod 100,
+    atomic_list_concat([W1, "hundred"], " ", W), !.
+
+to_word(N, W) :- 
+    N &gt; 99, 
+    H is N // 100, 
+    word(H, W1),
+    S is N mod 100,
+    S &gt; 0,
+    to_word(S, W2),
+    atomic_list_concat([W1, "hundred and", W2], " ", W), !.
+    
+</div>
+
+<div class="nb-cell query" name="q1">
+to_word(700, X).
+</div>
+
+</div>
