@@ -64,15 +64,15 @@ class QLearner:
 
 
 ##############################################
-
+# Set the values for hyperparameters
 n_episodes = 50_000
 learning_rate = 0.001
 discount = 0.95
 
+# Epsilon decay
 start_epsilon = 1.0
 epsilon_decay = start_epsilon / (n_episodes / 2)
-final_epsilon = 0.1  # make closer to `start_epsilon` to reduce randomness
-
+final_epsilon = 0.1 
 
 epsilon_decay_fn = lambda epsilon: max(final_epsilon, epsilon - epsilon_decay)
 
@@ -84,12 +84,10 @@ env.action_space.seed(seed)
 agent = QLearner(
     env.observation_space,
     env.action_space,
-    #
     learning_rate,
     discount,
-    #
     start_epsilon,
-    epsilon_decay_fn=epsilon_decay_fn,  # disable decay
+    epsilon_decay_fn=epsilon_decay_fn,  # disable decay here
 )
 
 # NOTICE:
@@ -100,8 +98,6 @@ agent = QLearner(
 
 # That is why in Q-table you can see that sometimes agent prefers to move out of the grid.
 # Of course this is not optimal, but since the strategy is eps-greedy, it can happen so.
-
-# Try setting eps to 0.75 and disabling decay to remove that noise.
 
 for episode in tqdm(range(n_episodes)):
     state, _ = env.reset(seed=seed)
@@ -123,7 +119,6 @@ import seaborn as sns
 
 sns.set_theme()
 
-
 def qtable_directions_map(qtable, length, width):
     """Get the best learned action & map it to arrows."""
 
@@ -139,7 +134,6 @@ def qtable_directions_map(qtable, length, width):
 
     qtable_directions = qtable_directions.reshape(length, width)
     return qtable_val_max, qtable_directions
-
 
 def plot_q_values_map(qtable, length, width):
     """Plot the last frame of the simulation and the policy learned."""
@@ -211,25 +205,3 @@ ax.plot(range(len(training_error_moving_average)), training_error_moving_average
 plt.tight_layout()
 plt.savefig("plots/errors.png")
 plt.close()
-
-
-# rolling_length = 500
-# fig, axs = plt.subplots(ncols=3, figsize=(12, 5))
-
-# axs[0].set_title("Episode rewards")
-# reward_moving_average = get_moving_avgs(env.return_queue, rolling_length, "valid")
-# axs[0].plot(range(len(reward_moving_average)), reward_moving_average)
-
-# axs[1].set_title("Episode lengths")
-# length_moving_average = get_moving_avgs(env.length_queue, rolling_length, "valid")
-# axs[1].plot(range(len(length_moving_average)), length_moving_average)
-
-# axs[2].set_title("Training Error")
-# training_error_moving_average = get_moving_avgs(
-#     agent.training_error, rolling_length, "same"
-# )
-# axs[2].plot(range(len(training_error_moving_average)), training_error_moving_average)
-
-
-# plt.tight_layout()
-# plt.savefig("plots/stats.png")
