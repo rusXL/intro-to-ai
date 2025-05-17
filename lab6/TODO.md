@@ -1,1 +1,0 @@
-Refactor vizualization section
