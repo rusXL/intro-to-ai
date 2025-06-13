@@ -1,1 +1,5 @@
-https://colab.research.google.com/drive/16FOZiH_P7Chg8-wyp_FLhv_Zz19gSBS5?usp=sharing
+https://colab.research.google.com/drive/1WnhTO3ZGwFpK98blMBkD0KLPjWRJYiqu?usp=sharing
+
+Full notebook execution takes less than a minute, since pretrained models are loaded from the drive. 
+
+To run notebook, select "Runtime" -> "Run all".
